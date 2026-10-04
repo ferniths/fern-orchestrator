@@ -1,0 +1,761 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Inter var', 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', 'Cascadia Mono', Menlo, Consolas, monospace;
+
+  --color-app: #09090b;
+  --color-panel: #101013;
+  --color-panel2: #16161a;
+  --color-line: #232327;
+  --color-line2: #303036;
+  --color-fg: #e7e7ea;
+  --color-fgm: #a1a1aa;
+  --color-fgf: #71717a;
+  --color-accent: #34d399;
+  --color-accent2: #10b981;
+  --color-accent-ink: #052e22;
+  --color-accent-ink2: #031b14;
+  --color-ok: #4ade80;
+  --color-warn: #fbbf24;
+  --color-danger: #f87171;
+  --color-info: #60a5fa;
+}
+
+:root {
+  color-scheme: dark;
+
+  /* Motion tokens — every duration/easing in the app resolves through these,
+     so the whole UI can be retimed in one place (Settings → Reduce motion
+     then simply zeroes them). */
+  --dur-fast: 120ms;
+  --dur: 180ms;
+  --dur-slow: 280ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-app);
+  color: var(--color-fg);
+  font-family: var(--font-sans);
+  font-size: 13.5px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow: hidden;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(63 63 70 / 0.8) transparent;
+}
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-thumb {
+  background: rgb(63 63 70 / 0.8);
+  border: 3px solid transparent;
+  background-clip: content-box;
+  border-radius: 8px;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: rgb(82 82 91 / 0.9);
+  background-clip: content-box;
+}
+
+::selection {
+  background: rgb(52 211 153 / 0.25);
+}
+
+:focus-visible {
+  outline: 1px solid var(--color-accent);
+  outline-offset: 1px;
+}
+
+/* Component classes live in the `components` layer so Tailwind utilities
+   (`w-52`, `pl-9`, `text-[11.5px]`, `h-[30px]` …) win over them. Tailwind v4
+   emits utilities inside a layer, and layered rules lose to unlayered ones
+   regardless of specificity — keeping these unlayered silently disabled every
+   utility override in the app (search text under its icon, inputs that could
+   not be sized, font sizes that would not stick). */
+@layer components {
+  /* -------------------------------------------------------------- layout */
+
+  .panel {
+    background: var(--color-panel);
+    border: 1px solid var(--color-line);
+    border-radius: 10px;
+  }
+
+  .panel-flat {
+    background: var(--color-panel);
+    border: 1px solid var(--color-line);
+    border-radius: 8px;
+  }
+
+  .hairline {
+    border-color: var(--color-line);
+  }
+
+  .stack-title {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--color-fgf);
+  }
+
+  /* ------------------------------------------------------------ controls */
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    height: 30px;
+    padding: 0 11px;
+    border-radius: 7px;
+    border: 1px solid var(--color-line2);
+    background: var(--color-panel2);
+    color: var(--color-fg);
+    font-size: 12.5px;
+    font-weight: 500;
+    white-space: nowrap;
+    cursor: pointer;
+    transition:
+      background var(--dur-fast) var(--ease-out),
+      border-color var(--dur-fast) var(--ease-out),
+      color var(--dur-fast) var(--ease-out);
+  }
+  .btn:hover:not(:disabled) {
+    background: #1d1d22;
+    border-color: #3d3d45;
+  }
+  .btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  .btn-primary {
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+    color: var(--color-accent-ink);
+    font-weight: 600;
+  }
+  .btn-primary:hover:not(:disabled) {
+    background: var(--color-accent2);
+    border-color: var(--color-accent2);
+    color: var(--color-accent-ink2);
+  }
+
+  .btn-danger {
+    border-color: rgb(248 113 113 / 0.4);
+    color: var(--color-danger);
+  }
+  .btn-danger:hover:not(:disabled) {
+    background: rgb(248 113 113 / 0.12);
+  }
+
+  .btn-ghost {
+    background: transparent;
+    border-color: transparent;
+    color: var(--color-fgm);
+  }
+  .btn-ghost:hover:not(:disabled) {
+    background: var(--color-panel2);
+    border-color: var(--color-line);
+    color: var(--color-fg);
+  }
+
+  .btn-sm {
+    height: 24px;
+    padding: 0 8px;
+    font-size: 11.5px;
+    border-radius: 6px;
+  }
+
+  /* Segmented tab control shared by page toolbars (Jobs filters, job detail
+     tabs, provider tabs). One sizing for every page so tab rows line up with
+     the toolbar heights around them. */
+  .tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border-radius: 7px;
+    padding: 5px 10px;
+    font-size: 12.5px;
+    color: var(--color-fgf);
+    white-space: nowrap;
+    transition:
+      background var(--dur-fast) var(--ease-out),
+      color var(--dur-fast) var(--ease-out);
+  }
+  .tab:hover {
+    color: var(--color-fgm);
+    background: rgb(22 22 26 / 0.6);
+  }
+  .tab-active,
+  .tab-active:hover {
+    color: var(--color-fg);
+    background: var(--color-panel2);
+  }
+
+  .input,
+  .textarea,
+  .select {
+    width: 100%;
+    background: #0c0c0e;
+    border: 1px solid var(--color-line);
+    border-radius: 7px;
+    color: var(--color-fg);
+    font-size: 13px;
+    padding: 7px 10px;
+    font-family: inherit;
+    transition: border-color var(--dur-fast) var(--ease-out);
+  }
+  .input::placeholder,
+  .textarea::placeholder {
+    color: var(--color-fgf);
+  }
+  .input:hover,
+  .textarea:hover,
+  .select:hover {
+    border-color: var(--color-line2);
+  }
+  .input:focus,
+  .textarea:focus,
+  .select:focus {
+    outline: none;
+    border-color: var(--color-accent);
+  }
+  /* Field with a leading icon: reserve a fixed gutter so the icon and the
+     text can never touch, at any window width. */
+  .input-icon {
+    padding-left: 36px;
+  }
+  .textarea {
+    resize: vertical;
+    min-height: 76px;
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    line-height: 1.6;
+  }
+  .select {
+    appearance: none;
+    padding-right: 26px;
+    background-image: linear-gradient(45deg, transparent 50%, var(--color-fgf) 50%),
+      linear-gradient(135deg, var(--color-fgf) 50%, transparent 50%);
+    background-position:
+      calc(100% - 14px) calc(50% + 1px),
+      calc(100% - 9px) calc(50% + 1px);
+    background-size:
+      5px 5px,
+      5px 5px;
+    background-repeat: no-repeat;
+  }
+
+  .label {
+    display: block;
+    font-size: 11.5px;
+    font-weight: 500;
+    color: var(--color-fgm);
+    margin-bottom: 5px;
+  }
+
+  /* --------------------------------------------------------------- pills */
+
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    height: 20px;
+    padding: 0 7px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    border: 1px solid var(--color-line2);
+    background: var(--color-panel2);
+    color: var(--color-fgm);
+    white-space: nowrap;
+  }
+  .pill-ok {
+    color: var(--color-ok);
+    border-color: rgb(74 222 128 / 0.3);
+    background: rgb(74 222 128 / 0.08);
+  }
+  .pill-warn {
+    color: var(--color-warn);
+    border-color: rgb(251 191 36 / 0.3);
+    background: rgb(251 191 36 / 0.08);
+  }
+  .pill-danger {
+    color: var(--color-danger);
+    border-color: rgb(248 113 113 / 0.3);
+    background: rgb(248 113 113 / 0.08);
+  }
+  .pill-info {
+    color: var(--color-info);
+    border-color: rgb(96 165 250 / 0.3);
+    background: rgb(96 165 250 / 0.08);
+  }
+  .pill-accent {
+    color: var(--color-accent);
+    border-color: rgb(52 211 153 / 0.3);
+    background: rgb(52 211 153 / 0.08);
+  }
+  .pill-muted {
+    color: var(--color-fgf);
+  }
+
+  .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    background: currentColor;
+    flex: none;
+  }
+
+  /* ---------------------------------------------------------------- misc */
+
+  .mono {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: -0.01em;
+  }
+
+  .truncate-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .grid-fade {
+    background-image:
+      linear-gradient(to right, rgb(35 35 39 / 0.5) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(35 35 39 / 0.5) 1px, transparent 1px);
+    background-size: 28px 28px;
+    mask-image: radial-gradient(ellipse at center, black 30%, transparent 78%);
+  }
+
+  /* --------------------------------------------------------------- prose */
+
+  .markdown {
+    font-size: 13px;
+    line-height: 1.65;
+    color: var(--color-fg);
+  }
+  .markdown > * + * {
+    margin-top: 0.7em;
+  }
+  .markdown h1,
+  .markdown h2,
+  .markdown h3 {
+    font-weight: 650;
+    color: #fff;
+    line-height: 1.25;
+  }
+  .markdown h1 {
+    font-size: 1.35em;
+  }
+  .markdown h2 {
+    font-size: 1.15em;
+  }
+  .markdown h3 {
+    font-size: 1em;
+  }
+  .markdown a {
+    color: var(--color-accent);
+    text-decoration: none;
+    border-bottom: 1px solid rgb(52 211 153 / 0.35);
+  }
+  .markdown code {
+    font-family: var(--font-mono);
+    font-size: 0.92em;
+    background: #1b1b20;
+    border: 1px solid var(--color-line);
+    border-radius: 4px;
+    padding: 0.5px 4px;
+  }
+  .markdown pre {
+    background: #0c0c0e;
+    border: 1px solid var(--color-line);
+    border-radius: 8px;
+    padding: 10px 12px;
+    overflow-x: auto;
+  }
+  .markdown pre code {
+    background: none;
+    border: none;
+    padding: 0;
+  }
+  .markdown ul,
+  .markdown ol {
+    padding-left: 1.3em;
+  }
+  .markdown li + li {
+    margin-top: 0.25em;
+  }
+  .markdown blockquote {
+    border-left: 2px solid var(--color-line2);
+    padding-left: 10px;
+    color: var(--color-fgm);
+  }
+  .markdown table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 12.5px;
+  }
+  .markdown th,
+  .markdown td {
+    border: 1px solid var(--color-line);
+    padding: 5px 8px;
+    text-align: left;
+  }
+  .markdown th {
+    background: var(--color-panel2);
+    color: var(--color-fgm);
+    font-weight: 600;
+  }
+  .markdown hr {
+    border: none;
+    border-top: 1px solid var(--color-line);
+  }
+}
+
+/* ============================================================== animation *
+ * A small, shared motion system: tokens (--dur* / --ease*) plus reusable
+ * primitives (.anim-*, .lift, .press, .skeleton, .fx-*). Everything animates
+ * transform/opacity first, respects both the OS preference and the in-app
+ * toggle, and degrades to instant under `html.reduce-motion`.
+ * ========================================================================= */
+
+@keyframes fx-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fx-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* Dialogs / popovers: settle upward into place, no bounce, no glow. Centering
+   comes from Tailwind's `translate` property, which composes independently of
+   `transform` — so this keyframe only ever touches transform + opacity. */
+@keyframes fx-pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Menus, tooltips and toasts: anchored, so they only translate + fade. */
+@keyframes fx-menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes fx-slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fx-slide-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Skeleton sweep — indeterminate loading without a spinner on every panel. */
+@keyframes fx-shimmer {
+  from {
+    background-position: 100% 50%;
+  }
+  to {
+    background-position: 0 50%;
+  }
+}
+
+@keyframes pulse-soft {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+.animate-pulse-soft {
+  animation: pulse-soft 1.6s ease-in-out infinite;
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-in {
+  animation: fx-slide-in-up var(--dur) var(--ease-out);
+}
+
+/* Route change: the new page settles in. Deliberately no fill mode — a
+   lingering `transform` on an ancestor would turn every `position: fixed`
+   dialog inside the page into a relatively positioned box. */
+.fx-page {
+  animation: fx-slide-in-up var(--dur-slow) var(--ease-out);
+}
+
+/* Radix primitives (dialog/tooltip/switch). `data-state=closed` animations are
+   `forwards`-filled so Radix's presence detection waits for them to finish
+   before unmounting — that is what gives dialogs a real exit. */
+.fx-overlay[data-state='open'] {
+  animation: fx-fade-in var(--dur) var(--ease-out);
+}
+.fx-overlay[data-state='closed'] {
+  animation: fx-fade-out var(--dur-fast) ease-in forwards;
+}
+.fx-modal[data-state='open'] {
+  animation: fx-pop-in var(--dur) var(--ease-out);
+}
+.fx-modal[data-state='closed'] {
+  animation: fx-fade-out var(--dur-fast) ease-in forwards;
+}
+.fx-tip[data-state='open'],
+.fx-menu[data-state='open'] {
+  animation: fx-menu-in var(--dur-fast) var(--ease-out);
+}
+.fx-tip[data-state='closed'],
+.fx-menu[data-state='closed'] {
+  animation: fx-fade-out var(--dur-fast) ease-in forwards;
+}
+.fx-toast {
+  animation: fx-slide-in-right var(--dur-slow) var(--ease-out);
+}
+
+/* List/table rows can be staggered with `style={{ '--i': n }}`. */
+.fx-row {
+  animation: fx-slide-in-up var(--dur) var(--ease-out) both;
+  animation-delay: calc(var(--i, 0) * 28ms);
+}
+
+/* Table rows can't translate reliably, so they only fade in. */
+.fx-row-fade {
+  animation: fx-fade-in var(--dur) var(--ease-out) both;
+  animation-delay: calc(var(--i, 0) * 24ms);
+}
+
+/* Entrance variants for surfaces that are not Radix (command palette, custom
+   menus): same curves, no data-state dependency. */
+.fx-in-fade {
+  animation: fx-fade-in var(--dur) var(--ease-out);
+}
+.fx-in-pop {
+  animation: fx-menu-in var(--dur) var(--ease-out);
+}
+.fx-in-right {
+  animation: fx-slide-in-right var(--dur-slow) var(--ease-out);
+}
+
+/* Put `.fx-stagger` on a container to cascade its children in. */
+.fx-stagger > * {
+  animation: fx-slide-in-up var(--dur) var(--ease-out) both;
+}
+.fx-stagger > *:nth-child(1) {
+  animation-delay: 0ms;
+}
+.fx-stagger > *:nth-child(2) {
+  animation-delay: 28ms;
+}
+.fx-stagger > *:nth-child(3) {
+  animation-delay: 56ms;
+}
+.fx-stagger > *:nth-child(4) {
+  animation-delay: 84ms;
+}
+.fx-stagger > *:nth-child(5) {
+  animation-delay: 112ms;
+}
+.fx-stagger > *:nth-child(6) {
+  animation-delay: 140ms;
+}
+.fx-stagger > *:nth-child(7) {
+  animation-delay: 168ms;
+}
+.fx-stagger > *:nth-child(8) {
+  animation-delay: 196ms;
+}
+.fx-stagger > *:nth-child(n + 9) {
+  animation-delay: 224ms;
+}
+
+/* Graph: layout changes glide, state colours cross-fade, edges never jump. */
+.dag-canvas .react-flow__node {
+  transition:
+    transform var(--dur-slow) var(--ease-out),
+    opacity var(--dur) var(--ease-out);
+  animation: fx-fade-in var(--dur) var(--ease-out) both;
+}
+.dag-canvas .react-flow__edge-path,
+.dag-canvas .react-flow__edge-text-bg {
+  transition:
+    stroke var(--dur) var(--ease-out),
+    opacity var(--dur) var(--ease-out);
+}
+.dag-canvas .react-flow__controls-button {
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
+}
+
+@layer components {
+  /* Interactive surfaces: a 1px lift is enough to read as "this is a card". */
+  .lift {
+    transition:
+      transform var(--dur) var(--ease-out),
+      box-shadow var(--dur) var(--ease-out),
+      border-color var(--dur) var(--ease-out),
+      background-color var(--dur) var(--ease-out);
+  }
+  @media (hover: hover) {
+    .lift:hover {
+      transform: translateY(-1px);
+      border-color: var(--color-line2);
+      box-shadow: 0 12px 28px -20px rgb(0 0 0 / 0.9);
+    }
+  }
+
+  /* Buttons/pressables: a hair of travel on press, never on hover. Tailwind
+     v4 emits `translate`, not `transform`, so both properties are listed. */
+  .press {
+    transition:
+      transform var(--dur-fast) var(--ease-out),
+      translate var(--dur-fast) var(--ease-out),
+      background-color var(--dur-fast) var(--ease-out),
+      border-color var(--dur-fast) var(--ease-out),
+      color var(--dur-fast) var(--ease-out);
+  }
+  .press:active:not(:disabled) {
+    transform: translateY(0.5px);
+  }
+
+  /* Expanding/collapsing region: animates the grid track, not max-height, so
+     any content height works. Pair with [data-open] on the wrapper. */
+  .collapsible {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows var(--dur-slow) var(--ease-in-out);
+  }
+  .collapsible > * {
+    overflow: hidden;
+    min-height: 0;
+  }
+  .collapsible[data-open='true'] {
+    grid-template-rows: 1fr;
+  }
+
+  /* Skeleton lines for `useApi` loads that have nothing to show yet. */
+  .skeleton {
+    background-image: linear-gradient(90deg, #131316 0%, #1c1c21 50%, #131316 100%);
+    background-size: 300% 100%;
+    animation: fx-shimmer 1.4s var(--ease-in-out) infinite;
+    border-radius: 5px;
+    height: 10px;
+  }
+
+  /* Status pills that change value animate the colour, not the layout. */
+  .pill {
+    transition:
+      color var(--dur) var(--ease-out),
+      background-color var(--dur) var(--ease-out),
+      border-color var(--dur) var(--ease-out);
+  }
+}
+
+/* Settings → Appearance → Reduce motion. */
+html.reduce-motion *,
+html.reduce-motion *::before,
+html.reduce-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-delay: 0ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  transition-delay: 0ms !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Settings → Appearance → Accent. `neutral` (emerald) is the default defined
+   in :root above; each override restates the four accent tokens only. */
+html[data-accent='blue'] {
+  --color-accent: #60a5fa;
+  --color-accent2: #3b82f6;
+  --color-accent-ink: #0b1f3a;
+  --color-accent-ink2: #071528;
+}
+
+html[data-accent='green'] {
+  --color-accent: #4ade80;
+  --color-accent2: #22c55e;
+  --color-accent-ink: #052e16;
+  --color-accent-ink2: #031d0e;
+}
+
+html[data-accent='amber'] {
+  --color-accent: #fbbf24;
+  --color-accent2: #f59e0b;
+  --color-accent-ink: #3b2405;
+  --color-accent-ink2: #2a1a03;
+}
